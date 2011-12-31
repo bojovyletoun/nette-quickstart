@@ -38,7 +38,7 @@ class TaskList extends UI\Control
 	 */
 	public function setDisplayTaskList($displayTaskList)
 	{
-		$this->displayTaskList = (bool)$displayTaskList;
+		$this->displayTaskList = (bool) $displayTaskList;
 	}
 
 	/**
@@ -47,9 +47,8 @@ class TaskList extends UI\Control
 	 */
 	public function setDisplayUser($displayUser)
 	{
-		$this->displayUser = (bool)$displayUser;
+		$this->displayUser = (bool) $displayUser;
 	}
-
 
 	/**
 	 * Vykreslí komponentu. Šablonou komponenty je TaskList.latte.
@@ -64,24 +63,58 @@ class TaskList extends UI\Control
 		$this->template->render();
 	}
 
-
 	/**
 	 * Signál, který označí zadaný úkol jako splněný.
 	 * @param $taskId ID úkolu.
 	 */
 	public function handleMarkDone($taskId)
 	{
-		$task = $this->model->getTasks()->find($taskId)->fetch();
+		$task = $this->model->getTask($taskId);
 		// ověření, zda je tento úkol uživateli skutečně přiřazen
-		if ($task !== NULL && $task->user_id === $this->presenter->getUser()->getId()) {
-			$this->model->getTasks()->where(array('id' => $taskId))->update(array('done' => 1));
-			// přesměrování nebo invalidace snippetu
-			if (!$this->presenter->isAjax()) {
-				$this->presenter->redirect('this');
-			} else {
-				$this->invalidateControl();
-			}
+		// $task && je lepší než $task !==NULL &&
+		if ($task && $task->user_id == $this->presenter->user->id) {
+			$task->done = !$task->done;
+			$task->update();
+			$state = $task->done ? "splněn" : "nedokončený";
+			$this->redrawIfNotAjax(); //pokud není ajax, zprávu nepřidáme
+			$this->flashMessage("Úkol je $state.");
+		} else {
+			$this->flashMessage('Jen vlastník může změnit stav');
+			$this->redrawIfNotAjax();
 		}
+	}
+
+	/**
+	 * Tento signál smaže úkol.
+	 * @param $taskId ID úkolu.
+	 */
+	public function handleDelete($taskId)
+	{
+		$task = $this->model->getTask($taskId);
+		if ($task && $task->user_id == $this->presenter->user->id) {
+			if (!$task->done) { // odkaz sice není v šabloně, ale  je možné podstrčit url
+				$this->flashMessage('nejřív úkol splň', 'error');
+				$this->redrawIfNotAjax();
+			} else {
+				$task->delete();
+				$this->redrawIfNotAjax();
+				$this->flashMessage(" Záznam $task smazán");
+			}
+		} else {
+			$this->flashMessage('nelze mazat cizí úkoly', 'error');
+			$this->redrawIfNotAjax();
+		}
+	}
+
+	/**
+	 * Zkratka pro přesměrování
+	 */
+	function redrawIfNotAjax()
+	{
+		if (!$this->presenter->ajax) {
+			$this->redirect('this');
+		}
+		$this->invalidateControl();
 	}
 
 }

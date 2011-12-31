@@ -1,3 +1,6 @@
+{snippet flashMessages}
+	<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+{/snippet}
 {snippet}
 <table class="tasks">
 	<thead>
@@ -17,7 +20,10 @@
 		<td class="tasklist" n:if="$displayTaskList">{$task->tasklist->title}</td>
 		<td class="text">{$task->text}</td>
 		<td class="user" n:if="$displayUser">{$task->user->name}</td>
-		<td class="action"><a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick ajax">hotovo</a></td>
+		<td class="action">
+			<a n:href="markDone!, $task->id" class="icon tick ajax" n:if="$task->user_id==$user->id">Hotovo</a>
+			<a n:href="delete, $task->id" class="ajax icon delete" n:if="$task->user_id==$user->id && $task->done">Smaž</a>
+		</td>
 	</tr>
 	{/foreach}
 	{else}

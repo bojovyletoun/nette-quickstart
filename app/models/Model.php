@@ -29,6 +29,15 @@ class Model extends Nette\Object
 	}
 
 	/**
+	 * Najde záznam
+	 * @return Nette\Database\Table\ActiveRow OR NULL
+	 */
+	public function getTask($id)
+	{
+		return $this->tasks->get($id);
+	}
+
+	/**
 	 * Získá tabulku se seznamy úkolů.
 	 * @return Nette\Database\Table\Selection
 	 */
