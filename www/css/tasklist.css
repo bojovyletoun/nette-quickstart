@@ -91,6 +91,9 @@ div.task-lists a:hover {
   color: #333;
   border-bottom-color: #555;
 }
+.active{
+	text-shadow: -1pt 0 2pt gray
+}
 /*** Titulky ***/
 h1 {
   color: #404040;
@@ -149,7 +152,7 @@ table.tasks .user {
   font-size: smaller;
 }
 table.tasks .action {
-  width: 75px;
+  width: 150px;
 }
 tr.notice td {
   text-align: center;

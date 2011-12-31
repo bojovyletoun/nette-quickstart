@@ -1,73 +1,73 @@
 <!DOCTYPE html>
 <html>
-<head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
-	<meta name="robots" content="{$robots}" n:ifset="$robots" />
+		<meta name="robots" content="{$robots}" n:ifset="$robots" />
 
-	<title>{ifset $title}{$title} &ndash; {/ifset}Úkolníček</title>
+		<title>{ifset $title}{$title} &ndash; {/ifset}Úkolníček</title>
 
-	<link rel="stylesheet" href="{$basePath}/css/tasklist.css" type="text/css" />
-	<link rel="shortcut icon" href="{$basePath}/favicon.ico" type="image/x-icon" />
+		<link rel="stylesheet" href="{$basePath}/css/tasklist.css" type="text/css" />
+		<link rel="shortcut icon" href="{$basePath}/favicon.ico" type="image/x-icon" />
 
-	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
-	<script type="text/javascript" src="{$basePath}/js/netteForms.js"></script>
-	<script type="text/javascript" src="{$basePath}/js/ajax.js"></script>
+		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.6/jquery.min.js"></script>
+		<script type="text/javascript" src="{$basePath}/js/netteForms.js"></script>
+		<script type="text/javascript" src="{$basePath}/js/ajax.js"></script>
 	{block head}{/block}
-</head>
+	</head>
 
-<body>
+	<body>
 
-	<div id="header">
-		<div id="header-inner">
-			<div class="title"><a n:href="Homepage:">Úkolníček</a></div>
+		<div id="header">
+			<div id="header-inner">
+				<div class="title"><a n:href="Homepage:">Úkolníček</a></div>
 
 			{if $user->isLoggedIn()}
-			<div class="user">
-				<span class="icon user">{$user->getIdentity()->name}</span> |
-				<a n:href="User:password">Změna hesla</a> |
-				<a n:href="signOut!">Odhlásit se</a>
-			</div>
+				<div class="user">
+					<span class="icon user">{$user->getIdentity()->name}</span> |
+					<a n:href="User:password">Změna hesla</a> |
+					<a n:href="signOut!">Odhlásit se</a>
+				</div>
 			{/if}
-		</div>
-	</div>
-
-	<div id="container">
-		<div id="sidebar">
-			{if $user->isLoggedIn()}
-			<div class="title">Seznamy úkolů</div>
-			<div class="task-lists">
-				<ul>
-					<li n:foreach="$taskLists as $list"><a n:href="Task: $list->id">{$list->title}</a></li>
-				</ul>
 			</div>
+		</div>
 
-			<fieldset>
-				<legend>Nový seznam</legend>
+		<div id="container">
+			<div id="sidebar">
+			{if $user->isLoggedIn()}
+				<div class="title">Seznamy úkolů</div>
+				<div class="task-lists">
+					<ul>
+						<li n:foreach="$taskLists as $i => $list" n:class="$presenter->islinkCurrent(this,$i)?active"><a n:href="Task: $list->id">{$list->title}</a></li>
+					</ul>
+				</div>
+
+				<fieldset>
+					<legend>Nový seznam</legend>
 				{form newTasklistForm}
-				<div class="new-tasklist-form">
+					<div class="new-tasklist-form">
 					{control $form errors}
 
 					{input title}
 					{input create}
-				</div>
+					</div>
 				{/form}
-			</fieldset>
+				</fieldset>
 			{/if}
-		</div>
+			</div>
 
-		<div id="content">
+			<div id="content">
 			{snippet flashMessages}
-			<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
+				<div n:foreach="$flashes as $flash" class="flash {$flash->type}">{$flash->message}</div>
 			{/snippet}
 
 			{include #content}
+			</div>
+
+			<div id="footer">
+
+			</div>
 		</div>
 
-		<div id="footer">
-
-		</div>
-	</div>
-
-</body>
+	</body>
 </html>
