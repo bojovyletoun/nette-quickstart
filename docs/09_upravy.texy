@@ -1,0 +1,93 @@
+Úpravy
+####
+
+.[perex]
+Autor kapitoly: bojovyletoun
+ V této kapitole provedu drobné úpravy v aplikaci.
+
+Zvıraznìní aktuálního tasklistu
+===
+Chceme v seznamu úkolù zvıraznit aktuálnì otevøenı tasklist.
+ Do `www\css\tasklist.css` pøidáme zvıraznìní pro tøídu .active. Postaèí tøeba jen `color:blue;`
+ Dále v `app\templates\@layout.latte` nìjdìte øádek vypisující odkazy.
+ `<li n:foreach="$taskLists as $i => $list" n:class="$presenter->islinkCurrent(this,$i)?active"><a n:href="Task: $list->id">{$list->title}</a></li>`
+ Zkusíme tedy pouít `$presenter->linkCurrent` , co je zkratka pro `$presenter->isLinkCurrent($dest)`. Tento zápis  umoòuje Nette\Object, prostudujte si "pøíslušnou kapitolu":http://doc.nette.org/cs/php-language-enhancements#toc-properties-gettery-a-settery
+ Funkce samotná, zjišuje, zda aktuální umístìní  je shodné s umístìním v argumentu funkci, nebo **posledním generovanım odkazem**, pokud voláme funkci bez argumentu.
+ K zápisu jsme pouijeme  "//en makro// class":http://doc.nette.org/cs/default-macros#toc-n-class , a vıraz uvnitø je série vırazù, z nich jeden je  "ternární operátor":http://doc.nette.org/cs/default-macros#toc-podminky .
+ Dojdeme k tomuto øešení:
+ `<li n:foreach="$taskLists as $list" n:class="$presenter->linkCurrent?active">`
+
+Nyní si to vyzkoušejte v prohlíeèi. Odkaz se obarví. Zdá se e je to v poøádku... Podívejte se poøádnì, nìco tady nehraje. 
+
+V pøedchozí úpravì je ovšem "chyba":http://forum.nette.org/cs/9344-novy-quickstart-diskuze#p69385 ,
+zkuste pøijít proè. Správnì to bude takto:
+ `<li n:foreach="$taskLists as $i => $list" n:class="$presenter->islinkCurrent(this,$i)?active">`
+
+Ability to swap task status, delete finished task
+===
+Nejøív trochu refaktoringu.
+1. Do `\Model` pøidáme funkci, která vrátí úkol dle id.
+----
+/--code php
+	/**
+	 * Najde záznam
+	 * @return Nette\Database\Table\ActiveRow OR NULL
+	 */
+	public function getTask($id)
+	{
+		return $this->tasks->get($id);
+	}
+\--
+
+2. Do presenteru pøidáme funkci na pøesmìrování pro non-Ajaxovı request.
+---
+To se hodí, aby pøi reloadu stránky se akce neprovedly opakovanì, nìkdy to je nevhodné. (Odeslání objednávky pøes formuláø, hlasování).
+/--code php
+	/**
+	 * Zkratka pro pøesmìrování
+	 */
+	function redrawIfNotAjax()
+	{
+		if (!$this->presenter->ajax) {
+			$this->redirect('this');
+		}
+	}
+\--
+
+
+Monost mìnit stav úkolu splnìn <--> nesplnìn a smazat ho
+----
+Nejdøív upravíme šablonu. Zmìníme tag <a> s odkazem na signál markdone!. Tedy odkaz se zobrazí vdy.
+ `<a n:if="!$task->done" n:href="markDone! $task->id" class="icon tick ajax">hotovo</a>`
+ `<a n:href="markDone!, $task->id" class="icon tick ajax">Hotovo</a>`
+ Za tento upravenı odkaz hned pøidáme další odkaz:
+ 
+ 
+Zmìna Tasklist.php:
+/--
+
+\--
+
+Monost smazat úkol
+---
+Pouijeme signál
+/--
+	/**
+	 * Tento signál smae úkol.
+	 * @param $taskId ID úkolu.
+	 */
+	public function handleDelete($taskId)
+	{
+		$task = $this->model->getTask($taskId);
+		if ($task && $task->user_id = $this->presenter->user->id) {
+			if (!$task->done) { // odkaz sice není v šablonì, ale  je moné podstrèit url
+				$this->presenter->flashMessage('nejøív úkol splò', 'error');
+				$this->redrawIfNotAjax();
+			} else {
+				$task->delete();
+				$this->redrawIfNotAjax();
+				$this->presenter->flashMessage(" Záznam $task smazán");
+				$this->invalidateControl();
+			}
+		}
+\--
