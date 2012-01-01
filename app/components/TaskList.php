@@ -116,5 +116,10 @@ class TaskList extends UI\Control
 		}
 		$this->invalidateControl();
 	}
+	
+	function flashMessage($message, $type = 'info')
+	{
+		$this->presenter->flashMessage($message, $type);
+	}
 
 }
